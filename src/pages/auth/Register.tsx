@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Icons } from "@/components/ui/icons";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -25,6 +26,7 @@ const formSchema = z.object({
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,48 +40,25 @@ export default function Register() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
+  const handleGoogleSignUp = async () => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
+      setIsGoogleLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
         options: {
-          data: {
-            first_name: values.firstName,
-            last_name: values.lastName,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data.user && !data.session) {
-        // Email verification required
-        toast({
-          title: "Verification email sent",
-          description: "Please check your email to verify your account.",
-        });
-        navigate("/auth/login");
-      } else {
-        // Auto-login successful (if email verification is disabled)
-        toast({
-          title: "Registration successful",
-          description: "Welcome to your dashboard!",
-        });
-        navigate("/dashboard");
-      }
+      
+      if (error) throw error;
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sign up with Google",
       });
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -93,6 +72,32 @@ export default function Register() {
           <p className="text-sm text-muted-foreground">
             Enter your details below to create your account
           </p>
+        </div>
+
+        <Button
+          variant="outline"
+          type="button"
+          disabled={isGoogleLoading}
+          className="w-full"
+          onClick={handleGoogleSignUp}
+        >
+          {isGoogleLoading ? (
+            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.google className="mr-2 h-4 w-4" />
+          )}
+          Sign up with Google
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
         </div>
 
         <Form {...form}>
