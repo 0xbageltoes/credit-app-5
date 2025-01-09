@@ -18,10 +18,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formSchema = z.object({
-  email: z.string().email(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-export default function ForgotPassword() {
+export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,15 +33,16 @@ export default function ForgotPassword() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      const { error } = await supabase.auth.updateUser({
+        password: values.password,
       });
 
       if (error) {
@@ -45,14 +50,14 @@ export default function ForgotPassword() {
       }
 
       toast({
-        title: "Password reset email sent",
-        description: "Please check your email to reset your password.",
+        title: "Password updated",
+        description: "Your password has been successfully updated.",
       });
       navigate("/auth/login");
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Password reset failed",
+        title: "Password update failed",
         description: error instanceof Error ? error.message : "Please try again",
       });
     } finally {
@@ -64,9 +69,9 @@ export default function ForgotPassword() {
     <div className="container flex items-center justify-center min-h-screen py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Reset password</CardTitle>
+          <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
           <CardDescription>
-            Enter your email to reset your password
+            Enter your new password below
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,14 +79,32 @@ export default function ForgotPassword() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>New Password</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="name@example.com"
-                        type="email"
+                        type="password"
+                        placeholder="Enter your new password"
+                        {...field}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm your new password"
                         {...field}
                         disabled={isLoading}
                       />
@@ -91,21 +114,10 @@ export default function ForgotPassword() {
                 )}
               />
               <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Sending reset email..." : "Send reset email"}
+                {isLoading ? "Updating password..." : "Update password"}
               </Button>
             </form>
           </Form>
-
-          <div className="mt-4 text-center text-sm">
-            Remember your password?{" "}
-            <Button
-              variant="link"
-              className="p-0 text-primary"
-              onClick={() => navigate("/auth/login")}
-            >
-              Sign in
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

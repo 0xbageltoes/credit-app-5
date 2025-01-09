@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import Callback from "./pages/auth/Callback";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,16 @@ const App = () => {
               element={
                 !isAuthenticated ? (
                   <ForgotPassword />
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
+              }
+            />
+            <Route
+              path="/auth/reset-password"
+              element={
+                !isAuthenticated ? (
+                  <ResetPassword />
                 ) : (
                   <Navigate to="/dashboard" replace />
                 )
