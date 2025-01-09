@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import Callback from "./pages/auth/Callback";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => {
                 )
               }
             />
+            <Route path="/auth/callback" element={<Callback />} />
 
             {/* Protected routes */}
             <Route
