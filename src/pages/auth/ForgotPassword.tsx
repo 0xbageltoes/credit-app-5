@@ -30,7 +30,7 @@ export default function ForgotPassword() {
             appearance={{ theme: ThemeSupa }}
             theme="light"
             providers={[]}
-            view="forgot_password"
+            view="forgotten_password"
             redirectTo={`${window.location.origin}/auth/login`}
           />
         </CardContent>
