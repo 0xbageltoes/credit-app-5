@@ -1,25 +1,66 @@
-import { LoanCharacteristics, ScenarioAssumptions, CashflowPeriod, CashflowResult } from './types';
-import { calculateAmortization, calculatePrepayment, calculateDefault } from './utils';
+import { addMonths } from 'date-fns';
+import { 
+  LoanCharacteristics, 
+  ScenarioAssumptions, 
+  CashflowPeriod,
+  CashflowResult,
+  InterestConfig
+} from './types';
+import { 
+  calculateAmortization, 
+  calculatePrepayment, 
+  calculateDefault,
+  calculateDateAdjustments,
+  calculateYearFraction 
+} from './utils';
 
 export class CashflowEngine {
   private loan: LoanCharacteristics;
   private assumptions: ScenarioAssumptions;
+  private interestConfig: InterestConfig;
   
-  constructor(loan: LoanCharacteristics, assumptions: ScenarioAssumptions) {
+  constructor(
+    loan: LoanCharacteristics, 
+    assumptions: ScenarioAssumptions,
+    interestConfig: InterestConfig
+  ) {
     this.loan = loan;
     this.assumptions = assumptions;
+    this.interestConfig = interestConfig;
   }
 
   public generateCashflows(): CashflowResult {
     const periods: CashflowPeriod[] = [];
     let currentBalance = this.loan.currentBalance;
+    let accumulatedShortfall = this.interestConfig.accruedInterest;
+    let currentDate = this.loan.nextPaymentDate;
     
-    for (let period = 1; period <= this.loan.remainingTerm; period++) {
-      // Calculate scheduled amortization
+    while (currentBalance > 0 && currentDate <= this.loan.maturityDate) {
+      const periodStartDate = addMonths(currentDate, -1);
+      const periodEndDate = currentDate;
+      const paymentDate = calculateDateAdjustments(
+        currentDate,
+        this.loan.dateConfig.businessDayConvention
+      );
+
+      // Calculate year fraction for interest
+      const yearFraction = calculateYearFraction(
+        periodStartDate,
+        periodEndDate,
+        this.loan.dateConfig.dayCount
+      );
+
+      // Calculate interest rate for period
+      const periodRate = this.calculatePeriodRate(periodStartDate);
+
+      // Calculate scheduled interest
+      const scheduledInterest = currentBalance * periodRate * yearFraction;
+
+      // Calculate scheduled principal
       const scheduled = calculateAmortization(
         currentBalance,
-        this.loan.grossCoupon,
-        this.loan.remainingTerm - period + 1
+        periodRate,
+        this.getRemainingPayments(currentDate)
       );
 
       // Calculate prepayments
@@ -29,7 +70,7 @@ export class CashflowEngine {
         this.assumptions.prepayUnits
       );
 
-      // Calculate defaults/losses
+      // Calculate defaults and losses
       const defaultAmount = calculateDefault(
         currentBalance,
         this.assumptions.defaultRate,
@@ -38,26 +79,59 @@ export class CashflowEngine {
 
       const loss = defaultAmount * (this.assumptions.severity / 100);
 
-      // Calculate interest
-      const grossInterest = currentBalance * (this.loan.grossCoupon / 12);
+      // Calculate interest collections and shortfalls
+      const defaultedInterest = defaultAmount * periodRate * yearFraction * 
+                              (1 - this.assumptions.severity / 100);
+
+      let interestCollected = Math.min(
+        scheduledInterest,
+        scheduledInterest - defaultedInterest
+      );
+
+      let interestShortfall = scheduledInterest - interestCollected;
+      let shortfallRecovered = 0;
+
+      // Handle shortfall recovery
+      if (accumulatedShortfall > 0 && interestCollected > 0) {
+        if (this.interestConfig.shortfallRecoveryPriority === 'ShortfallFirst') {
+          shortfallRecovered = Math.min(accumulatedShortfall, interestCollected);
+          interestCollected -= shortfallRecovered;
+        } else {
+          const excessInterest = Math.max(0, interestCollected - scheduledInterest);
+          shortfallRecovered = Math.min(accumulatedShortfall, excessInterest);
+        }
+        accumulatedShortfall = accumulatedShortfall - shortfallRecovered + interestShortfall;
+      }
 
       // Update balance
       const endingBalance = currentBalance - scheduled.principal - prepayment - defaultAmount;
       
-      periods.push({
-        period,
-        date: new Date(), // TODO: Add proper date calculation
+      // Create period
+      const period: CashflowPeriod = {
+        period: periods.length + 1,
+        startDate: periodStartDate,
+        endDate: periodEndDate,
+        paymentDate,
+        daysInPeriod: yearFraction * 360,
+        yearFraction,
         beginningBalance: currentBalance,
         scheduledPrincipal: scheduled.principal,
         prepayments: prepayment,
         losses: loss,
-        grossInterest,
-        netInterest: grossInterest, // TODO: Add interest shortfall calculation
+        grossInterest: scheduledInterest,
+        netInterest: interestCollected,
+        interestShortfall,
+        accumulatedShortfall,
+        shortfallRecovered,
+        defaultedInterest,
         endingBalance
-      });
+      };
 
+      periods.push(period);
+
+      // Setup next period
       currentBalance = endingBalance;
-      if (currentBalance <= 0) break;
+      currentDate = addMonths(currentDate, 1);
     }
 
     return {
@@ -66,12 +140,64 @@ export class CashflowEngine {
     };
   }
 
+  private calculatePeriodRate(date: Date): number {
+    if (this.loan.isFixedRate) {
+      return this.loan.grossCoupon;
+    }
+    
+    // TODO: Implement floating rate calculation based on forward curve
+    return this.loan.grossCoupon;
+  }
+
+  private getRemainingPayments(currentDate: Date): number {
+    // Calculate months between current date and maturity
+    const months = (this.loan.maturityDate.getFullYear() - currentDate.getFullYear()) * 12 +
+                  (this.loan.maturityDate.getMonth() - currentDate.getMonth());
+    
+    switch (this.loan.paymentFrequency) {
+      case 'Monthly':
+        return months;
+      case 'Quarterly':
+        return Math.ceil(months / 3);
+      case 'SemiAnnual':
+        return Math.ceil(months / 6);
+      case 'Annual':
+        return Math.ceil(months / 12);
+      default:
+        return months;
+    }
+  }
+
   private calculateMetrics(periods: CashflowPeriod[]): CashflowResult['metrics'] {
-    // TODO: Implement WAL and duration calculations
     return {
-      wal: 0,
-      duration: 0,
-      modifiedDuration: 0
+      wal: this.calculateWAL(periods),
+      duration: this.calculateDuration(periods),
+      modifiedDuration: this.calculateModifiedDuration(periods)
     };
+  }
+
+  private calculateWAL(periods: CashflowPeriod[]): number {
+    let weightedSum = 0;
+    let totalPrincipal = 0;
+    
+    periods.forEach(period => {
+      const principal = period.scheduledPrincipal + period.prepayments;
+      const timeInYears = period.yearFraction * period.period;
+      
+      weightedSum += principal * timeInYears;
+      totalPrincipal += principal;
+    });
+
+    return totalPrincipal > 0 ? weightedSum / totalPrincipal : 0;
+  }
+
+  private calculateDuration(periods: CashflowPeriod[]): number {
+    // TODO: Implement Macaulay duration calculation
+    return 0;
+  }
+
+  private calculateModifiedDuration(periods: CashflowPeriod[]): number {
+    // TODO: Implement Modified duration calculation
+    return 0;
   }
 }
