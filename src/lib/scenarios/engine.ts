@@ -1,3 +1,5 @@
+import { ScenarioConfig, ScenarioType } from './types';
+
 export class ScenarioEngine {
   private config: ScenarioConfig;
   private vector: number[] = [];
@@ -9,35 +11,29 @@ export class ScenarioEngine {
   }
 
   public generateVector(): number[] {
-    // Start with base vector
     this.initializeBaseVector();
 
-    // Apply ramps
     if (this.config.ramps?.length) {
       this.applyRamps();
     }
 
-    // Apply specific vector points
     if (this.config.vectors?.length) {
       this.applyVectorPoints();
     }
 
-    // Apply seasonal adjustments
     if (this.config.seasonalAdjustments) {
       this.applySeasonalAdjustments();
     }
 
-    // Apply shocks
     if (this.config.shock) {
       this.applyShock();
     }
 
-    // Apply conditional logic
     if (this.config.conditionalLogic) {
       this.applyConditionalLogic();
     }
 
-    return this.vector;
+    return this.vector.map(v => this.adjustForScenarioType(v));
   }
 
   private initializeBaseVector(): void {
@@ -48,18 +44,14 @@ export class ScenarioEngine {
   private applyRamps(): void {
     for (const ramp of this.config.ramps!) {
       let currentPeriod = 0;
-      
-      // Calculate ramp increment
       const increment = (ramp.endValue - ramp.startValue) / ramp.rampPeriods;
       
-      // Apply ramp
       for (let i = 0; i < ramp.rampPeriods; i++) {
         if (currentPeriod >= this.maxPeriods) break;
         this.vector[currentPeriod] = ramp.startValue + (increment * i);
         currentPeriod++;
       }
 
-      // Hold value if specified
       if (ramp.holdPeriods) {
         const holdValue = ramp.endValue;
         for (let i = 0; i < ramp.holdPeriods; i++) {
@@ -99,7 +91,6 @@ export class ScenarioEngine {
 
   private applyConditionalLogic(): void {
     const logic = this.parseConditionalLogic(this.config.conditionalLogic!);
-    
     for (let i = 0; i < this.maxPeriods; i++) {
       this.vector[i] = logic(i, this.vector[i]);
     }
@@ -127,15 +118,14 @@ export class ScenarioEngine {
     switch (this.config.type) {
       case 'CPR':
       case 'CDR':
-        return Math.max(0, Math.min(100, value)); // Rates between 0-100%
-      case 'Loss Severity':
-        return Math.max(0, Math.min(100, value)); // Severity between 0-100%
-      case 'Delinquency':
-        return Math.max(0, value); // Non-negative
-      case 'Interest Rate':
-        return value; // Can be negative
       case 'Draw Rate':
-        return Math.max(0, Math.min(100, value)); // Rates between 0-100%
+        return Math.max(0, Math.min(100, value));
+      case 'Loss Severity':
+        return Math.max(0, Math.min(100, value));
+      case 'Delinquency':
+        return Math.max(0, value);
+      case 'Interest Rate':
+        return Math.max(-10, Math.min(50, value));
       default:
         return value;
     }
