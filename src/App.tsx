@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useToast } from "@/hooks/use-toast";
+import { useInactivityTimeout } from "@/hooks/use-inactivity-timeout";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -16,29 +16,11 @@ import Callback from "./pages/auth/Callback";
 
 const queryClient = new QueryClient();
 
-const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
-
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const { toast } = useToast();
-  let inactivityTimer: NodeJS.Timeout;
-
-  const resetInactivityTimer = () => {
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
-    }
-    
-    if (isAuthenticated) {
-      inactivityTimer = setTimeout(async () => {
-        await supabase.auth.signOut();
-        toast({
-          title: "Session Expired",
-          description: "You have been logged out due to inactivity.",
-          variant: "destructive",
-        });
-      }, INACTIVITY_TIMEOUT);
-    }
-  };
+  
+  // Use our custom hook for inactivity timeout
+  useInactivityTimeout(isAuthenticated);
 
   useEffect(() => {
     // Check initial auth state
@@ -53,32 +35,10 @@ const App = () => {
       setIsAuthenticated(!!session);
     });
 
-    // Set up activity listeners
-    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'mousemove'];
-    
-    const handleUserActivity = () => {
-      resetInactivityTimer();
-    };
-
-    // Add event listeners
-    activityEvents.forEach(event => {
-      document.addEventListener(event, handleUserActivity);
-    });
-
-    // Initial timer setup
-    resetInactivityTimer();
-
-    // Cleanup
     return () => {
       subscription.unsubscribe();
-      activityEvents.forEach(event => {
-        document.removeEventListener(event, handleUserActivity);
-      });
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-      }
     };
-  }, [isAuthenticated]);
+  }, []);
 
   // Show loading state while checking auth
   if (isAuthenticated === null) {
