@@ -40,7 +40,8 @@ const Analyze = () => {
         return [];
       }
       
-      return data;
+      // Filter out any investments with null or empty investment_ids
+      return data.filter(inv => inv.investment_id && inv.investment_id.trim() !== '');
     },
   });
 
@@ -110,12 +111,14 @@ const Analyze = () => {
           </SelectTrigger>
           <SelectContent>
             {investments?.map((investment) => (
-              <SelectItem 
-                key={investment.investment_id} 
-                value={investment.investment_id}
-              >
-                {investment.investment_id} - {investment.type || 'N/A'} ({investment.borrower || 'Unknown'})
-              </SelectItem>
+              investment.investment_id && (  // Only render if investment_id exists
+                <SelectItem 
+                  key={investment.investment_id} 
+                  value={investment.investment_id}
+                >
+                  {investment.investment_id} - {investment.type || 'N/A'} ({investment.borrower || 'Unknown'})
+                </SelectItem>
+              )
             ))}
           </SelectContent>
         </Select>
