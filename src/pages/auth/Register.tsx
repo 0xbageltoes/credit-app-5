@@ -40,6 +40,39 @@ export default function Register() {
     },
   });
 
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            first_name: values.firstName,
+            last_name: values.lastName,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account",
+      });
+      
+      navigate("/auth/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create account",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleSignUp = async () => {
     try {
       setIsGoogleLoading(true);
