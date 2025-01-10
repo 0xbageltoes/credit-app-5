@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type UserAnalysisState = Database['public']['Tables']['user_analysis_state']['Row'];
 
 interface EvaluateTabProps {
   investmentDetails: any; // Replace with proper type when available
@@ -45,7 +48,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
     queryKey: ["analysisState"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_analysis_state")
+        .from('user_analysis_state')
         .select("*")
         .maybeSingle();
 
@@ -54,7 +57,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         return null;
       }
 
-      return data;
+      return data as UserAnalysisState;
     },
   });
 
@@ -62,19 +65,19 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   const updateForecastResults = useMutation({
     mutationFn: async (scenarioResults: any[]) => {
       const { data: existing } = await supabase
-        .from("user_analysis_state")
+        .from('user_analysis_state')
         .select("id")
         .maybeSingle();
 
       if (existing) {
         const { error } = await supabase
-          .from("user_analysis_state")
+          .from('user_analysis_state')
           .update({ last_forecast: scenarioResults })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("user_analysis_state")
+          .from('user_analysis_state')
           .insert([{ last_forecast: scenarioResults }]);
         if (error) throw error;
       }
@@ -95,7 +98,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   // Load persisted forecast results
   useEffect(() => {
     if (analysisState?.last_forecast && !scenarios.length) {
-      setScenarios(analysisState.last_forecast);
+      setScenarios(analysisState.last_forecast as any[]);
     }
   }, [analysisState, scenarios.length]);
 
@@ -244,3 +247,4 @@ const calculateModifiedDuration = (vector: number[]): number => {
   // Simplified duration calculation
   return vector.length > 0 ? vector.length / 24 : 0; // Rough estimate in years
 };
+

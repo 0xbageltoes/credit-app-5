@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { InvestmentSelector } from "@/components/analyze/InvestmentSelector";
 import { InvestmentDetails } from "@/components/analyze/InvestmentDetails";
 import { useToast } from "@/components/ui/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type UserAnalysisState = Database['public']['Tables']['user_analysis_state']['Row'];
 
 const Analyze = () => {
   const [selectedInvestment, setSelectedInvestment] = useState<string | null>(null);
@@ -15,7 +18,7 @@ const Analyze = () => {
     queryKey: ["analysisState"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_analysis_state")
+        .from('user_analysis_state')
         .select("*")
         .maybeSingle();
 
@@ -29,7 +32,7 @@ const Analyze = () => {
         return null;
       }
 
-      return data;
+      return data as UserAnalysisState;
     },
   });
 
@@ -37,19 +40,19 @@ const Analyze = () => {
   const updateAnalysisState = useMutation({
     mutationFn: async (investment_id: string) => {
       const { data: existing } = await supabase
-        .from("user_analysis_state")
+        .from('user_analysis_state')
         .select("id")
         .maybeSingle();
 
       if (existing) {
         const { error } = await supabase
-          .from("user_analysis_state")
+          .from('user_analysis_state')
           .update({ selected_instrument: investment_id })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("user_analysis_state")
+          .from('user_analysis_state')
           .insert([{ selected_instrument: investment_id }]);
         if (error) throw error;
       }

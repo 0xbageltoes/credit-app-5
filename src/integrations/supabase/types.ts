@@ -192,6 +192,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_analysis_state: {
+        Row: {
+          id: string
+          user_id: string
+          selected_instrument: string | null
+          last_forecast: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          selected_instrument?: string | null
+          last_forecast?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          selected_instrument?: string | null
+          last_forecast?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
