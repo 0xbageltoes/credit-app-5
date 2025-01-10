@@ -9,6 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      instruments_primary: {
+        Row: {
+          agreement_type: string | null
+          agreement_url: string | null
+          amortization_type: string | null
+          amount: number | null
+          borrower: string | null
+          channel: string | null
+          collateral: string | null
+          collateral_type: string | null
+          created_at: string | null
+          documentation_urls: string | null
+          governing_law: string | null
+          id: number
+          interest_rate: number | null
+          investment_id: string
+          lien_jurisdiction: string | null
+          lien_status: string | null
+          maturity_date: string | null
+          modification_options: Json | null
+          modification_percent: number | null
+          modification_types: Json | null
+          next_payment_date: string | null
+          origination_date: string | null
+          originator: string | null
+          originator_parent: string | null
+          payment_day: number | null
+          penalty_rate: number | null
+          purchase_date: string | null
+          rate_floor: number | null
+          rate_type: string | null
+          remaining_term: number | null
+          risk_score: number | null
+          servicer: string | null
+          start_date: string | null
+          stated_rate: number | null
+          status: string | null
+          subservicer: string | null
+          term: number | null
+          total_modifications: number | null
+          type: string | null
+        }
+        Insert: {
+          agreement_type?: string | null
+          agreement_url?: string | null
+          amortization_type?: string | null
+          amount?: number | null
+          borrower?: string | null
+          channel?: string | null
+          collateral?: string | null
+          collateral_type?: string | null
+          created_at?: string | null
+          documentation_urls?: string | null
+          governing_law?: string | null
+          id?: number
+          interest_rate?: number | null
+          investment_id: string
+          lien_jurisdiction?: string | null
+          lien_status?: string | null
+          maturity_date?: string | null
+          modification_options?: Json | null
+          modification_percent?: number | null
+          modification_types?: Json | null
+          next_payment_date?: string | null
+          origination_date?: string | null
+          originator?: string | null
+          originator_parent?: string | null
+          payment_day?: number | null
+          penalty_rate?: number | null
+          purchase_date?: string | null
+          rate_floor?: number | null
+          rate_type?: string | null
+          remaining_term?: number | null
+          risk_score?: number | null
+          servicer?: string | null
+          start_date?: string | null
+          stated_rate?: number | null
+          status?: string | null
+          subservicer?: string | null
+          term?: number | null
+          total_modifications?: number | null
+          type?: string | null
+        }
+        Update: {
+          agreement_type?: string | null
+          agreement_url?: string | null
+          amortization_type?: string | null
+          amount?: number | null
+          borrower?: string | null
+          channel?: string | null
+          collateral?: string | null
+          collateral_type?: string | null
+          created_at?: string | null
+          documentation_urls?: string | null
+          governing_law?: string | null
+          id?: number
+          interest_rate?: number | null
+          investment_id?: string
+          lien_jurisdiction?: string | null
+          lien_status?: string | null
+          maturity_date?: string | null
+          modification_options?: Json | null
+          modification_percent?: number | null
+          modification_types?: Json | null
+          next_payment_date?: string | null
+          origination_date?: string | null
+          originator?: string | null
+          originator_parent?: string | null
+          payment_day?: number | null
+          penalty_rate?: number | null
+          purchase_date?: string | null
+          rate_floor?: number | null
+          rate_type?: string | null
+          remaining_term?: number | null
+          risk_score?: number | null
+          servicer?: string | null
+          start_date?: string | null
+          stated_rate?: number | null
+          status?: string | null
+          subservicer?: string | null
+          term?: number | null
+          total_modifications?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
