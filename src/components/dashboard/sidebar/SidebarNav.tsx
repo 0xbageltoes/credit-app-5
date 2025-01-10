@@ -4,6 +4,7 @@ import {
   BarChart3,
   Settings,
   User,
+  LineChart,
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -18,6 +19,13 @@ export function SidebarNav({ isCollapsed }: SidebarNavProps) {
       icon: BarChart3,
       variant: "default",
       to: "/dashboard",
+    },
+    {
+      title: "Analyze",
+      label: "",
+      icon: LineChart,
+      variant: "ghost",
+      to: "/dashboard/analyze",
     },
     {
       title: "Profile",

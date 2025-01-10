@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -47,33 +48,49 @@ const App = () => {
             <Route
               path="/auth/login"
               element={
-                !isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />
+                <AuthGuard
+                  isAuthenticated={isAuthenticated}
+                  redirectTo="/dashboard"
+                  requireAuth={false}
+                >
+                  <Login />
+                </AuthGuard>
               }
             />
             <Route
               path="/auth/register"
               element={
-                !isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />
+                <AuthGuard
+                  isAuthenticated={isAuthenticated}
+                  redirectTo="/dashboard"
+                  requireAuth={false}
+                >
+                  <Register />
+                </AuthGuard>
               }
             />
             <Route
               path="/auth/forgot-password"
               element={
-                !isAuthenticated ? (
+                <AuthGuard
+                  isAuthenticated={isAuthenticated}
+                  redirectTo="/dashboard"
+                  requireAuth={false}
+                >
                   <ForgotPassword />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
+                </AuthGuard>
               }
             />
             <Route
               path="/auth/reset-password"
               element={
-                !isAuthenticated ? (
+                <AuthGuard
+                  isAuthenticated={isAuthenticated}
+                  redirectTo="/dashboard"
+                  requireAuth={false}
+                >
                   <ResetPassword />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
+                </AuthGuard>
               }
             />
             <Route path="/auth/callback" element={<Callback />} />
@@ -82,7 +99,12 @@ const App = () => {
             <Route
               path="/dashboard/*"
               element={
-                isAuthenticated ? <Index /> : <Navigate to="/auth/login" replace />
+                <AuthGuard
+                  isAuthenticated={isAuthenticated}
+                  redirectTo="/auth/login"
+                >
+                  <Index />
+                </AuthGuard>
               }
             />
 
@@ -90,11 +112,10 @@ const App = () => {
             <Route
               path="*"
               element={
-                isAuthenticated ? (
-                  <Navigate to="/dashboard" replace />
-                ) : (
-                  <Navigate to="/auth/login" replace />
-                )
+                <Navigate
+                  to={isAuthenticated ? "/dashboard" : "/auth/login"}
+                  replace
+                />
               }
             />
           </Routes>
