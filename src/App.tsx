@@ -42,8 +42,6 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
           <Routes>
             {/* Public routes */}
             <Route
@@ -100,6 +98,8 @@ const App = () => {
               }
             />
           </Routes>
+          <Toaster />
+          <Sonner />
         </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
