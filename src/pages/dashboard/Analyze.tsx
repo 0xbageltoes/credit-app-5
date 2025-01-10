@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 const Analyze = () => {
   const [selectedInvestment, setSelectedInvestment] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Fetch all investments for the dropdown
-  const { data: investments, isLoading: isLoadingInvestments } = useQuery({
+  const { data: investments, isLoading: isLoadingInvestments, error: investmentsError } = useQuery({
     queryKey: ["investments"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,14 +27,25 @@ const Analyze = () => {
       
       if (error) {
         console.error("Error fetching investments:", error);
+        toast({
+          title: "Error fetching investments",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
+      
+      if (!data || data.length === 0) {
+        console.log("No investments found");
+        return [];
+      }
+      
       return data;
     },
   });
 
   // Fetch selected investment details
-  const { data: investmentDetails, isLoading: isLoadingDetails } = useQuery({
+  const { data: investmentDetails, isLoading: isLoadingDetails, error: detailsError } = useQuery({
     queryKey: ["investment", selectedInvestment],
     queryFn: async () => {
       if (!selectedInvestment) return null;
@@ -45,8 +58,14 @@ const Analyze = () => {
       
       if (error) {
         console.error("Error fetching investment details:", error);
+        toast({
+          title: "Error fetching investment details",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
+      
       return data;
     },
     enabled: !!selectedInvestment,
@@ -59,12 +78,35 @@ const Analyze = () => {
     </div>
   );
 
+  // Show loading state
+  if (isLoadingInvestments) {
+    return <div className="flex items-center justify-center h-full">Loading investments...</div>;
+  }
+
+  // Show error state
+  if (investmentsError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-red-500">
+        <p>Error loading investments</p>
+        <p className="text-sm">{(investmentsError as Error).message}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <Select onValueChange={(value) => setSelectedInvestment(value)}>
           <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder={isLoadingInvestments ? "Loading..." : "Select Investment"} />
+            <SelectValue 
+              placeholder={
+                isLoadingInvestments 
+                  ? "Loading..." 
+                  : investments && investments.length > 0 
+                    ? "Select Investment"
+                    : "No investments available"
+              } 
+            />
           </SelectTrigger>
           <SelectContent>
             {investments?.map((investment) => (
@@ -80,7 +122,11 @@ const Analyze = () => {
       </div>
 
       {selectedInvestment && (isLoadingDetails ? (
-        <div>Loading investment details...</div>
+        <div className="flex items-center justify-center h-32">Loading investment details...</div>
+      ) : detailsError ? (
+        <div className="text-red-500">
+          Error loading investment details: {(detailsError as Error).message}
+        </div>
       ) : investmentDetails && (
         <>
           <h1 className="text-2xl font-semibold mb-6">
