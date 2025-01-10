@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ScenarioConfig, ScenarioType } from "@/lib/scenarios/types";
 import { ScenarioGenerator } from "@/lib/scenarios/generator";
-import { CashflowDashboard } from "@/components/cashflows/CashflowDashboard";
+import CashflowDashboard from "@/components/cashflows/CashflowDashboard"; // Fixed import
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
