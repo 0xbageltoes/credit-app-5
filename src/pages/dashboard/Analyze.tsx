@@ -15,21 +15,24 @@ const Analyze = () => {
   const [selectedInvestment, setSelectedInvestment] = useState<string | null>(null);
 
   // Fetch all investments for the dropdown
-  const { data: investments } = useQuery({
+  const { data: investments, isLoading: isLoadingInvestments } = useQuery({
     queryKey: ["investments"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("instruments_primary")
-        .select("investment_id")
+        .select("investment_id, type, borrower")
         .order("investment_id");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching investments:", error);
+        throw error;
+      }
       return data;
     },
   });
 
   // Fetch selected investment details
-  const { data: investmentDetails } = useQuery({
+  const { data: investmentDetails, isLoading: isLoadingDetails } = useQuery({
     queryKey: ["investment", selectedInvestment],
     queryFn: async () => {
       if (!selectedInvestment) return null;
@@ -40,7 +43,10 @@ const Analyze = () => {
         .eq("investment_id", selectedInvestment)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching investment details:", error);
+        throw error;
+      }
       return data;
     },
     enabled: !!selectedInvestment,
@@ -58,7 +64,7 @@ const Analyze = () => {
       <div className="mb-6">
         <Select onValueChange={(value) => setSelectedInvestment(value)}>
           <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder="Select Investment" />
+            <SelectValue placeholder={isLoadingInvestments ? "Loading..." : "Select Investment"} />
           </SelectTrigger>
           <SelectContent>
             {investments?.map((investment) => (
@@ -66,14 +72,16 @@ const Analyze = () => {
                 key={investment.investment_id} 
                 value={investment.investment_id}
               >
-                {investment.investment_id}
+                {investment.investment_id} - {investment.type || 'N/A'} ({investment.borrower || 'Unknown'})
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      {selectedInvestment && investmentDetails && (
+      {selectedInvestment && (isLoadingDetails ? (
+        <div>Loading investment details...</div>
+      ) : investmentDetails && (
         <>
           <h1 className="text-2xl font-semibold mb-6">
             {investmentDetails.investment_id}
@@ -195,7 +203,7 @@ const Analyze = () => {
             </TabsContent>
           </Tabs>
         </>
-      )}
+      ))}
     </div>
   );
 };
