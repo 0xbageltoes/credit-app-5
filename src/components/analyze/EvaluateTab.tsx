@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ScenarioConfig, ScenarioType } from "@/lib/scenarios/types";
 import { ScenarioGenerator } from "@/lib/scenarios/generator";
-import CashflowDashboard from "@/components/cashflows/CashflowDashboard"; // Fixed import
+import CashflowDashboard from "@/components/cashflows/CashflowDashboard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,7 @@ interface EvaluateTabProps {
 
 export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedScenario, setSelectedScenario] = useState<string>("Base");
   const [assumptions, setAssumptions] = useState<ScenarioConfig>({
     type: "CPR",
@@ -36,6 +39,65 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   });
 
   const [scenarios, setScenarios] = useState<any[]>([]); // Replace with proper type
+
+  // Fetch persisted forecast results
+  const { data: analysisState } = useQuery({
+    queryKey: ["analysisState"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_analysis_state")
+        .select("*")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching analysis state:", error);
+        return null;
+      }
+
+      return data;
+    },
+  });
+
+  // Update forecast results mutation
+  const updateForecastResults = useMutation({
+    mutationFn: async (scenarioResults: any[]) => {
+      const { data: existing } = await supabase
+        .from("user_analysis_state")
+        .select("id")
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from("user_analysis_state")
+          .update({ last_forecast: scenarioResults })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("user_analysis_state")
+          .insert([{ last_forecast: scenarioResults }]);
+        if (error) throw error;
+      }
+    },
+    onError: (error) => {
+      console.error("Error updating forecast results:", error);
+      toast({
+        title: "Error saving forecast",
+        description: "Failed to save your forecast results.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["analysisState"] });
+    },
+  });
+
+  // Load persisted forecast results
+  useEffect(() => {
+    if (analysisState?.last_forecast && !scenarios.length) {
+      setScenarios(analysisState.last_forecast);
+    }
+  }, [analysisState, scenarios.length]);
 
   const handleAssumptionChange = (field: string, value: any) => {
     setAssumptions(prev => ({
@@ -68,10 +130,11 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
       }));
 
       setScenarios(scenarioResults);
+      updateForecastResults.mutate(scenarioResults);
       
       toast({
         title: "Scenarios Generated",
-        description: "Successfully generated cashflow scenarios",
+        description: "Successfully generated and saved cashflow scenarios",
       });
     } catch (error) {
       console.error("Error generating scenarios:", error);
