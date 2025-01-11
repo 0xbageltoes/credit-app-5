@@ -143,6 +143,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
           defaultedPrincipal: 0,
           recoveries: 0,
           realizedLoss: 0,
+          losses: 0, // Added this field to match CashflowData interface
           weightedAverageCoupon: investmentDetails.interest_rate || 0,
           loanCount: 1,
           delinquentBalance: 0,
