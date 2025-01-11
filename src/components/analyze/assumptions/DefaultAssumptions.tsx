@@ -5,10 +5,9 @@ import { ScenarioConfig } from "@/lib/scenarios/evaluation-types";
 
 interface DefaultAssumptionsProps {
   form: UseFormReturn<ScenarioConfig>;
-  isLoading?: boolean;
 }
 
-export const DefaultAssumptions = ({ form, isLoading }: DefaultAssumptionsProps) => {
+export const DefaultAssumptions = ({ form }: DefaultAssumptionsProps) => {
   return (
     <>
       <FormField
@@ -21,7 +20,6 @@ export const DefaultAssumptions = ({ form, isLoading }: DefaultAssumptionsProps)
               type="number"
               {...field}
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
-              disabled={isLoading}
             />
           </FormItem>
         )}
@@ -36,7 +34,6 @@ export const DefaultAssumptions = ({ form, isLoading }: DefaultAssumptionsProps)
               type="number"
               {...field}
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
-              disabled={isLoading}
             />
           </FormItem>
         )}
@@ -51,7 +48,6 @@ export const DefaultAssumptions = ({ form, isLoading }: DefaultAssumptionsProps)
               type="number"
               {...field}
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
-              disabled={isLoading}
             />
           </FormItem>
         )}

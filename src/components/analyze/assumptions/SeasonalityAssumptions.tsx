@@ -5,10 +5,9 @@ import { ScenarioConfig } from "@/lib/scenarios/evaluation-types";
 
 interface SeasonalityAssumptionsProps {
   form: UseFormReturn<ScenarioConfig>;
-  isLoading?: boolean;
 }
 
-export const SeasonalityAssumptions = ({ form, isLoading }: SeasonalityAssumptionsProps) => {
+export const SeasonalityAssumptions = ({ form }: SeasonalityAssumptionsProps) => {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   return (
@@ -25,7 +24,6 @@ export const SeasonalityAssumptions = ({ form, isLoading }: SeasonalityAssumptio
                 type="number"
                 {...field}
                 onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                disabled={isLoading}
               />
             </FormItem>
           )}

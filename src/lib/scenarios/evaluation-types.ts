@@ -3,6 +3,8 @@ export type ScenarioType = "CPR" | "CDR" | "Loss Severity" | "Delinquency" | "In
 export interface ScenarioConfig {
   type: ScenarioType;
   initialValue: number;
+  cpr?: number;
+  cprStartMonth?: number;
   ramps: {
     startValue: number;
     endValue: number;

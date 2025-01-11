@@ -11,36 +11,44 @@ import { PrepaymentAssumptions } from "./PrepaymentAssumptions";
 import { SeasonalityAssumptions } from "./SeasonalityAssumptions";
 
 const formSchema = z.object({
-  cpr: z.number().min(0).max(100),
-  cprStartMonth: z.number().min(1),
-  seasonalAdjustments: z.record(z.string(), z.number()),
+  type: z.string(),
+  initialValue: z.number(),
+  cpr: z.number().min(0).max(100).optional(),
+  cprStartMonth: z.number().min(1).optional(),
   defaultRate: z.number().min(0).max(100).optional(),
   severity: z.number().min(0).max(100).optional(),
   recoveryLag: z.number().min(0).optional(),
+  seasonalAdjustments: z.record(z.string(), z.number()),
+  ramps: z.array(z.object({
+    startValue: z.number(),
+    endValue: z.number(),
+    rampPeriods: z.number(),
+    holdPeriods: z.number()
+  }))
 });
 
 interface AssumptionsPanelProps {
-  onSubmit: (values: ScenarioConfig) => void;
-  isLoading?: boolean;
-  defaultValues?: Partial<ScenarioConfig>;
+  assumptions: ScenarioConfig;
+  onAssumptionsChange: (values: ScenarioConfig) => void;
+  onGenerateScenarios: () => void;
+  investmentDetails: any;
 }
 
 export const AssumptionsPanel = ({
-  onSubmit,
-  isLoading,
-  defaultValues,
+  assumptions,
+  onAssumptionsChange,
+  onGenerateScenarios,
+  investmentDetails,
 }: AssumptionsPanelProps) => {
   const form = useForm<ScenarioConfig>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      cpr: defaultValues?.cpr ?? 0,
-      cprStartMonth: defaultValues?.cprStartMonth ?? 1,
-      seasonalAdjustments: defaultValues?.seasonalAdjustments ?? {},
-      defaultRate: defaultValues?.defaultRate ?? 0,
-      severity: defaultValues?.severity ?? 0,
-      recoveryLag: defaultValues?.recoveryLag ?? 0,
-    },
+    defaultValues: assumptions
   });
+
+  const onSubmit = (values: ScenarioConfig) => {
+    onAssumptionsChange(values);
+    onGenerateScenarios();
+  };
 
   return (
     <Form {...form}>
@@ -58,7 +66,7 @@ export const AssumptionsPanel = ({
                 <CardTitle>Default Assumptions</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4">
-                <DefaultAssumptions form={form} isLoading={isLoading} />
+                <DefaultAssumptions form={form} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -69,7 +77,7 @@ export const AssumptionsPanel = ({
                 <CardTitle>Prepayment Assumptions</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4">
-                <PrepaymentAssumptions form={form} isLoading={isLoading} />
+                <PrepaymentAssumptions form={form} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -80,14 +88,14 @@ export const AssumptionsPanel = ({
                 <CardTitle>Seasonality Adjustments</CardTitle>
               </CardHeader>
               <CardContent>
-                <SeasonalityAssumptions form={form} isLoading={isLoading} />
+                <SeasonalityAssumptions form={form} />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Updating..." : "Update Assumptions"}
+        <Button type="submit" className="w-full">
+          Update Assumptions
         </Button>
       </form>
     </Form>

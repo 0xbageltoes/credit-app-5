@@ -5,10 +5,9 @@ import { ScenarioConfig } from "@/lib/scenarios/evaluation-types";
 
 interface PrepaymentAssumptionsProps {
   form: UseFormReturn<ScenarioConfig>;
-  isLoading?: boolean;
 }
 
-export const PrepaymentAssumptions = ({ form, isLoading }: PrepaymentAssumptionsProps) => {
+export const PrepaymentAssumptions = ({ form }: PrepaymentAssumptionsProps) => {
   return (
     <>
       <FormField
@@ -21,7 +20,6 @@ export const PrepaymentAssumptions = ({ form, isLoading }: PrepaymentAssumptions
               type="number"
               {...field}
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
-              disabled={isLoading}
             />
           </FormItem>
         )}
@@ -36,7 +34,6 @@ export const PrepaymentAssumptions = ({ form, isLoading }: PrepaymentAssumptions
               type="number"
               {...field}
               onChange={(e) => field.onChange(parseInt(e.target.value))}
-              disabled={isLoading}
             />
           </FormItem>
         )}
