@@ -43,6 +43,9 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
 
   const [scenarios, setScenarios] = useState<any[]>([]); // Replace with proper type
 
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
   // Fetch persisted forecast results
   const { data: analysisState } = useQuery({
     queryKey: ["analysisState"],
@@ -64,6 +67,10 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   // Update forecast results mutation
   const updateForecastResults = useMutation({
     mutationFn: async (scenarioResults: any[]) => {
+      if (!user?.id) {
+        throw new Error("No authenticated user");
+      }
+
       const { data: existing } = await supabase
         .from('user_analysis_state')
         .select("id")
@@ -72,13 +79,19 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
       if (existing) {
         const { error } = await supabase
           .from('user_analysis_state')
-          .update({ last_forecast: scenarioResults })
+          .update({ 
+            last_forecast: scenarioResults,
+            user_id: user.id 
+          })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('user_analysis_state')
-          .insert([{ last_forecast: scenarioResults }]);
+          .insert([{ 
+            last_forecast: scenarioResults,
+            user_id: user.id 
+          }]);
         if (error) throw error;
       }
     },
@@ -247,4 +260,3 @@ const calculateModifiedDuration = (vector: number[]): number => {
   // Simplified duration calculation
   return vector.length > 0 ? vector.length / 24 : 0; // Rough estimate in years
 };
-

@@ -194,28 +194,28 @@ export type Database = {
       }
       user_analysis_state: {
         Row: {
-          id: string
-          user_id: string
-          selected_instrument: string | null
-          last_forecast: Json | null
           created_at: string
+          id: string
+          last_forecast: Json | null
+          selected_instrument: string | null
           updated_at: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          selected_instrument?: string | null
-          last_forecast?: Json | null
           created_at?: string
+          id?: string
+          last_forecast?: Json | null
+          selected_instrument?: string | null
           updated_at?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          selected_instrument?: string | null
-          last_forecast?: Json | null
           created_at?: string
+          id?: string
+          last_forecast?: Json | null
+          selected_instrument?: string | null
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

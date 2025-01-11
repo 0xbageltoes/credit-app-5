@@ -13,6 +13,9 @@ const Analyze = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
   // Fetch user's analysis state
   const { data: analysisState } = useQuery({
     queryKey: ["analysisState"],
@@ -39,6 +42,10 @@ const Analyze = () => {
   // Update analysis state mutation
   const updateAnalysisState = useMutation({
     mutationFn: async (investment_id: string) => {
+      if (!user?.id) {
+        throw new Error("No authenticated user");
+      }
+
       const { data: existing } = await supabase
         .from('user_analysis_state')
         .select("id")
@@ -47,13 +54,19 @@ const Analyze = () => {
       if (existing) {
         const { error } = await supabase
           .from('user_analysis_state')
-          .update({ selected_instrument: investment_id })
+          .update({ 
+            selected_instrument: investment_id,
+            user_id: user.id 
+          })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('user_analysis_state')
-          .insert([{ selected_instrument: investment_id }]);
+          .insert([{ 
+            selected_instrument: investment_id,
+            user_id: user.id 
+          }]);
         if (error) throw error;
       }
     },
