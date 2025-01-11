@@ -172,6 +172,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         assumptions={assumptions}
         onAssumptionsChange={setAssumptions}
         onGenerateScenarios={generateScenarios}
+        investmentDetails={investmentDetails}
       />
 
       <div className="bg-white rounded-lg shadow">
