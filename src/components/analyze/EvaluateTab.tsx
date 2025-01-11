@@ -7,7 +7,6 @@ import CashflowDashboard from "@/components/cashflows/CashflowDashboard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -43,8 +42,14 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
 
   const [scenarios, setScenarios] = useState<any[]>([]); // Replace with proper type
 
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
+  // Get current user using React Query
+  const { data: userData } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+  });
 
   // Fetch persisted forecast results
   const { data: analysisState } = useQuery({
@@ -67,7 +72,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   // Update forecast results mutation
   const updateForecastResults = useMutation({
     mutationFn: async (scenarioResults: any[]) => {
-      if (!user?.id) {
+      if (!userData?.id) {
         throw new Error("No authenticated user");
       }
 
@@ -81,7 +86,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
           .from('user_analysis_state')
           .update({ 
             last_forecast: scenarioResults,
-            user_id: user.id 
+            user_id: userData.id 
           })
           .eq("id", existing.id);
         if (error) throw error;
@@ -90,7 +95,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
           .from('user_analysis_state')
           .insert([{ 
             last_forecast: scenarioResults,
-            user_id: user.id 
+            user_id: userData.id 
           }]);
         if (error) throw error;
       }
@@ -260,3 +265,4 @@ const calculateModifiedDuration = (vector: number[]): number => {
   // Simplified duration calculation
   return vector.length > 0 ? vector.length / 24 : 0; // Rough estimate in years
 };
+
