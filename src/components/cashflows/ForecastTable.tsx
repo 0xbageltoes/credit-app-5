@@ -27,57 +27,59 @@ const formatPercent = (value: number) => {
 
 export const ForecastTable = ({ cashflows, startDate }: ForecastTableProps) => {
   return (
-    <ScrollArea className="h-[500px] rounded-md border">
-      <Table>
-        <TableHeader className="sticky top-0 bg-white">
-          <TableRow>
-            <TableHead>Period</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Beginning Balance</TableHead>
-            <TableHead>Scheduled Principal</TableHead>
-            <TableHead>Scheduled Interest</TableHead>
-            <TableHead>Prepayments</TableHead>
-            <TableHead>Defaulted Principal</TableHead>
-            <TableHead>Recoveries</TableHead>
-            <TableHead>Realized Loss</TableHead>
-            <TableHead>WAC</TableHead>
-            <TableHead>Loan Count</TableHead>
-            <TableHead>Delinquent Balance</TableHead>
-            <TableHead>Delinquent %</TableHead>
-            <TableHead>Servicer Expenses</TableHead>
-            <TableHead>Other Expenses</TableHead>
-            <TableHead>Other Tranche CF</TableHead>
-            <TableHead>Net Cashflow</TableHead>
-            <TableHead>Ending Balance</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {cashflows.map((cf, index) => (
-            <TableRow key={cf.period}>
-              <TableCell>{cf.period}</TableCell>
-              <TableCell>
-                {format(new Date(startDate.getTime() + index * 30 * 24 * 60 * 60 * 1000), 'MMM yyyy')}
-              </TableCell>
-              <TableCell>{formatCurrency(cf.beginningBalance)}</TableCell>
-              <TableCell>{formatCurrency(cf.scheduledPrincipal)}</TableCell>
-              <TableCell>{formatCurrency(cf.scheduledInterest)}</TableCell>
-              <TableCell>{formatCurrency(cf.prepayments)}</TableCell>
-              <TableCell>{formatCurrency(cf.defaultedPrincipal)}</TableCell>
-              <TableCell>{formatCurrency(cf.recoveries)}</TableCell>
-              <TableCell>{formatCurrency(cf.realizedLoss)}</TableCell>
-              <TableCell>{formatPercent(cf.weightedAverageCoupon)}</TableCell>
-              <TableCell>{cf.loanCount}</TableCell>
-              <TableCell>{formatCurrency(cf.delinquentBalance)}</TableCell>
-              <TableCell>{formatPercent(cf.delinquentPercent)}</TableCell>
-              <TableCell>{formatCurrency(cf.servicerExpenses)}</TableCell>
-              <TableCell>{formatCurrency(cf.otherExpenses)}</TableCell>
-              <TableCell>{formatCurrency(cf.cashflowToOtherTranches)}</TableCell>
-              <TableCell>{formatCurrency(cf.netCashflow)}</TableCell>
-              <TableCell>{formatCurrency(cf.endingBalance)}</TableCell>
+    <div className="relative overflow-auto border rounded-md">
+      <div className="overflow-x-auto" style={{ maxHeight: '600px' }}>
+        <Table>
+          <TableHeader className="sticky top-0 z-10 bg-white border-b">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Period</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Date</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Beginning Balance</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Scheduled Principal</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Scheduled Interest</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Prepayments</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Defaulted Principal</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Recoveries</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Realized Loss</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">WAC</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Loan Count</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Delinquent Balance</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Delinquent %</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Servicer Expenses</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Other Expenses</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Other Tranche CF</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Net Cashflow</TableHead>
+              <TableHead className="h-8 px-2 text-xs whitespace-nowrap">Ending Balance</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </ScrollArea>
+          </TableHeader>
+          <TableBody>
+            {cashflows.map((cf) => (
+              <TableRow key={cf.period} className="hover:bg-muted/30">
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{cf.period}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">
+                  {format(new Date(startDate.getTime() + (cf.period - 1) * 30 * 24 * 60 * 60 * 1000), 'MMM yyyy')}
+                </TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.beginningBalance)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.scheduledPrincipal)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.scheduledInterest)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.prepayments)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.defaultedPrincipal)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.recoveries)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.realizedLoss)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatPercent(cf.weightedAverageCoupon)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{cf.loanCount}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.delinquentBalance)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatPercent(cf.delinquentPercent)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.servicerExpenses)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.otherExpenses)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.cashflowToOtherTranches)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.netCashflow)}</TableCell>
+                <TableCell className="h-8 px-2 text-xs whitespace-nowrap">{formatCurrency(cf.endingBalance)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 };
