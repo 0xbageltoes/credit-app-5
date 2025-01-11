@@ -27,29 +27,29 @@ const formatPercent = (value: number) => {
 
 export const ForecastTable = ({ cashflows, startDate }: ForecastTableProps) => {
   return (
-    <div className="relative overflow-auto border rounded-md">
-      <div className="overflow-x-auto" style={{ maxHeight: '600px' }}>
+    <div className="relative border rounded-md">
+      <div className="overflow-auto" style={{ maxHeight: '600px' }}>
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-white border-b">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Period</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Date</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Beginning Balance</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Scheduled Principal</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Scheduled Interest</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Prepayments</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Defaulted Principal</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Recoveries</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Realized Loss</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">WAC</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Loan Count</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Delinquent Balance</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Delinquent %</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Servicer Expenses</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Other Expenses</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Other Tranche CF</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Net Cashflow</TableHead>
-              <TableHead className="h-6 px-2 text-xs whitespace-nowrap">Ending Balance</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Period</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Date</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Beginning Balance</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Scheduled Principal</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Scheduled Interest</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Prepayments</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Defaulted Principal</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Recoveries</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Realized Loss</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">WAC</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Loan Count</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Delinquent Balance</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Delinquent %</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Servicer Expenses</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Other Expenses</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Other Tranche CF</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Net Cashflow</TableHead>
+              <TableHead className="h-6 px-2 text-xs whitespace-nowrap bg-white">Ending Balance</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
