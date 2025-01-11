@@ -31,6 +31,7 @@ export interface CashflowData {
   defaultedPrincipal: number;
   recoveries: number;
   realizedLoss: number;
+  losses: number; // Added this field
   weightedAverageCoupon: number;
   loanCount: number;
   delinquentBalance: number;

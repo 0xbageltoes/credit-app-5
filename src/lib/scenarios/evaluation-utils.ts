@@ -22,9 +22,21 @@ export const generateScenarioResults = (
   interestRate: number
 ): CashflowData => ({
   period: 0,
+  beginningBalance: investmentAmount,
   scheduledPrincipal: (vector[0] || 0) * investmentAmount / 100,
   scheduledInterest: interestRate * investmentAmount / 1200,
   prepayments: 0,
+  defaultedPrincipal: 0,
+  recoveries: 0,
+  realizedLoss: 0,
   losses: 0,
-  recoveries: 0
+  weightedAverageCoupon: interestRate,
+  loanCount: 1,
+  delinquentBalance: 0,
+  delinquentPercent: 0,
+  servicerExpenses: 0,
+  otherExpenses: 0,
+  cashflowToOtherTranches: 0,
+  netCashflow: 0,
+  endingBalance: investmentAmount
 });
