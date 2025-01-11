@@ -51,29 +51,33 @@ export const AssumptionsPanel = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-        <Card className="p-1">
-          <CardContent className="space-y-2 pt-0">
-            <div className="grid gap-2">
-              <div className="space-y-1">
-                <h4 className="text-xs font-medium">Default Assumptions</h4>
-                <DefaultAssumptions form={form} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1">
+        <Card className="p-0.5">
+          <CardContent className="space-y-1 pt-0">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+              <div className="col-span-2">
+                <h4 className="text-[10px] font-medium mb-0.5">Default Assumptions</h4>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                  <DefaultAssumptions form={form} />
+                </div>
               </div>
               
-              <div className="space-y-1">
-                <h4 className="text-xs font-medium">Prepayment Assumptions</h4>
-                <PrepaymentAssumptions form={form} />
+              <div className="col-span-2">
+                <h4 className="text-[10px] font-medium mb-0.5">Prepayment Assumptions</h4>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                  <PrepaymentAssumptions form={form} />
+                </div>
               </div>
               
-              <div className="space-y-1">
-                <h4 className="text-xs font-medium">Seasonality Adjustments</h4>
+              <div className="col-span-2">
+                <h4 className="text-[10px] font-medium mb-0.5">Seasonality Adjustments</h4>
                 <SeasonalityAssumptions form={form} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Button type="submit" className="w-full text-xs h-8">
+        <Button type="submit" className="w-full text-[10px] h-6 mt-1">
           Update Assumptions
         </Button>
       </form>

@@ -14,11 +14,12 @@ export const PrepaymentAssumptions = ({ form }: PrepaymentAssumptionsProps) => {
         control={form.control}
         name="cpr"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>CPR (%)</FormLabel>
+          <FormItem className="space-y-0.5">
+            <FormLabel className="text-[10px]">CPR (%)</FormLabel>
             <Input
               type="number"
               {...field}
+              className="h-6 text-[11px]"
               onChange={(e) => field.onChange(parseFloat(e.target.value))}
             />
           </FormItem>
@@ -28,11 +29,12 @@ export const PrepaymentAssumptions = ({ form }: PrepaymentAssumptionsProps) => {
         control={form.control}
         name="cprStartMonth"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>CPR Start Month</FormLabel>
+          <FormItem className="space-y-0.5">
+            <FormLabel className="text-[10px]">CPR Start Month</FormLabel>
             <Input
               type="number"
               {...field}
+              className="h-6 text-[11px]"
               onChange={(e) => field.onChange(parseInt(e.target.value))}
             />
           </FormItem>
