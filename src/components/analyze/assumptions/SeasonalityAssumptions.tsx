@@ -16,14 +16,23 @@ export const SeasonalityAssumptions = ({ form }: SeasonalityAssumptionsProps) =>
         <FormField
           key={month}
           control={form.control}
-          name={`seasonalAdjustments.${month}`}
+          name="seasonalAdjustments"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Month {month}</FormLabel>
               <Input
                 type="number"
-                {...field}
-                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                value={field.value?.[month] || ""}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  const newAdjustments = { ...field.value };
+                  if (!isNaN(value)) {
+                    newAdjustments[month] = value;
+                  } else {
+                    delete newAdjustments[month];
+                  }
+                  field.onChange(newAdjustments);
+                }}
               />
             </FormItem>
           )}
