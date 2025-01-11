@@ -12,6 +12,9 @@ export interface ScenarioConfig {
   seasonalAdjustments: {
     [key: number]: number;
   };
+  defaultRate?: number;
+  severity?: number;
+  recoveryLag?: number;
 }
 
 export interface CashflowData {
