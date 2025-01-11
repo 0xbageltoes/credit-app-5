@@ -1,3 +1,5 @@
+import type { CashflowData } from "./evaluation-types";
+
 export const calculateWAF = (vector: number[]): number => {
   if (!vector.length) return 0;
   let sum = 0;
