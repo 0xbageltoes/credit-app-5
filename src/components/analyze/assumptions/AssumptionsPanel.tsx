@@ -51,29 +51,29 @@ export const AssumptionsPanel = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <Card className="p-2">
-          <CardContent className="space-y-4 pt-0">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Default Assumptions</h4>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+        <Card className="p-1">
+          <CardContent className="space-y-2 pt-0">
+            <div className="grid gap-2">
+              <div className="space-y-1">
+                <h4 className="text-xs font-medium">Default Assumptions</h4>
                 <DefaultAssumptions form={form} />
               </div>
               
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Prepayment Assumptions</h4>
+              <div className="space-y-1">
+                <h4 className="text-xs font-medium">Prepayment Assumptions</h4>
                 <PrepaymentAssumptions form={form} />
               </div>
               
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Seasonality Adjustments</h4>
+              <div className="space-y-1">
+                <h4 className="text-xs font-medium">Seasonality Adjustments</h4>
                 <SeasonalityAssumptions form={form} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full text-xs h-8">
           Update Assumptions
         </Button>
       </form>
