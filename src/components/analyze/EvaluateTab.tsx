@@ -136,11 +136,22 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         name,
         cashflows: vector.map((value, index) => ({
           period: index + 1,
+          beginningBalance: index === 0 ? (investmentDetails.amount || 0) : 0,
           scheduledPrincipal: value * (investmentDetails.amount || 0) / 100,
           scheduledInterest: (investmentDetails.interest_rate || 0) * (investmentDetails.amount || 0) / 1200,
           prepayments: 0,
-          losses: 0,
-          recoveries: 0
+          defaultedPrincipal: 0,
+          recoveries: 0,
+          realizedLoss: 0,
+          weightedAverageCoupon: investmentDetails.interest_rate || 0,
+          loanCount: 1,
+          delinquentBalance: 0,
+          delinquentPercent: 0,
+          servicerExpenses: (investmentDetails.amount || 0) * 0.0025 / 12, // Example: 25bps annual servicing fee
+          otherExpenses: 0,
+          cashflowToOtherTranches: 0,
+          netCashflow: 0,
+          endingBalance: 0
         })),
         metrics: {
           waf: calculateWAF(vector),
@@ -148,6 +159,18 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
           yield: investmentDetails.interest_rate || 0
         }
       }));
+
+      // Calculate ending balances and net cashflows
+      scenarioResults.forEach(scenario => {
+        scenario.cashflows.forEach((cf, index) => {
+          if (index > 0) {
+            cf.beginningBalance = scenario.cashflows[index - 1].endingBalance;
+          }
+          cf.endingBalance = cf.beginningBalance - cf.scheduledPrincipal - cf.prepayments - cf.realizedLoss;
+          cf.netCashflow = cf.scheduledPrincipal + cf.scheduledInterest + cf.prepayments + cf.recoveries - 
+                          cf.servicerExpenses - cf.otherExpenses - cf.cashflowToOtherTranches;
+        });
+      });
 
       setScenarios(scenarioResults);
       updateForecastResults.mutate(scenarioResults);
@@ -179,6 +202,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         <CashflowDashboard
           scenarios={scenarios}
           onScenarioSelect={setSelectedScenario}
+          startDate={investmentDetails.start_date ? new Date(investmentDetails.start_date) : new Date()}
         />
       </div>
     </div>

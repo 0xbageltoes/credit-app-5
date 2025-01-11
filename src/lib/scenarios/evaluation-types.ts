@@ -17,15 +17,29 @@ export interface ScenarioConfig {
   defaultRate?: number;
   severity?: number;
   recoveryLag?: number;
+  servicerExpenseRate?: number;
+  otherExpenseRate?: number;
+  delinquencyRate?: number;
 }
 
 export interface CashflowData {
   period: number;
+  beginningBalance: number;
   scheduledPrincipal: number;
   scheduledInterest: number;
   prepayments: number;
-  losses: number;
+  defaultedPrincipal: number;
   recoveries: number;
+  realizedLoss: number;
+  weightedAverageCoupon: number;
+  loanCount: number;
+  delinquentBalance: number;
+  delinquentPercent: number;
+  servicerExpenses: number;
+  otherExpenses: number;
+  cashflowToOtherTranches: number;
+  netCashflow: number;
+  endingBalance: number;
 }
 
 export interface CashflowMetrics {

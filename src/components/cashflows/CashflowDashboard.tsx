@@ -4,41 +4,24 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-
-interface CashflowData {
-  period: number;
-  scheduledPrincipal: number;
-  scheduledInterest: number;
-  prepayments: number;
-  losses: number;
-  recoveries: number;
-}
-
-interface ScenarioResult {
-  name: string;
-  cashflows: CashflowData[];
-  metrics: {
-    waf: number;
-    modifiedDuration: number;
-    yield: number;
-  };
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ForecastTable } from './ForecastTable';
+import { ScenarioResult } from '@/lib/scenarios/evaluation-types';
 
 interface CashflowDashboardProps {
   scenarios?: ScenarioResult[];
   onScenarioSelect?: (scenario: string) => void;
-  onPeriodSelect?: (period: number) => void;
+  startDate?: Date;
 }
 
 const CashflowDashboard = ({
   scenarios = [],
   onScenarioSelect,
-  onPeriodSelect
+  startDate = new Date()
 }: CashflowDashboardProps) => {
   const [selectedMetric, setSelectedMetric] = useState<'principal' | 'interest' | 'losses'>('principal');
   const [showCumulative, setShowCumulative] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
   const chartData = useMemo(() => {
     if (!scenarios.length) return [];
@@ -87,25 +70,13 @@ const CashflowDashboard = ({
     }).filter(Boolean);
   }, [scenarios]);
 
-  const handleScenarioClick = useCallback((scenario: string) => {
-    onScenarioSelect?.(scenario);
-  }, [onScenarioSelect]);
-
-  if (!scenarios.length) {
-    return (
-      <div className="w-full p-4">
-        <Alert>
-          <AlertDescription>
-            No scenario data available. Please select or generate scenarios.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  const selectedScenarioData = useMemo(() => {
+    if (!selectedScenario) return scenarios[0]?.cashflows || [];
+    return scenarios.find(s => s.name === selectedScenario)?.cashflows || [];
+  }, [scenarios, selectedScenario]);
 
   return (
     <div className="w-full space-y-4">
-      {/* Controls */}
       <div className="flex items-center space-x-4 p-4 bg-card rounded-lg shadow-sm">
         <div className="space-y-2">
           <Label htmlFor="metric-select">Metric</Label>
@@ -130,76 +101,73 @@ const CashflowDashboard = ({
             checked={showCumulative}
             onCheckedChange={(checked) => setShowCumulative(checked as boolean)}
           />
-          <Label htmlFor="cumulative">
-            Show Cumulative
-          </Label>
+          <Label htmlFor="cumulative">Show Cumulative</Label>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="scenario-select">Scenario</Label>
+          <Select
+            value={selectedScenario || scenarios[0]?.name}
+            onValueChange={(value) => {
+              setSelectedScenario(value);
+              onScenarioSelect?.(value);
+            }}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select scenario" />
+            </SelectTrigger>
+            <SelectContent>
+              {scenarios.map(s => (
+                <SelectItem key={s.name} value={s.name}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Chart */}
-      {chartData.length > 0 && (
-        <div className="bg-card p-4 rounded-lg shadow-sm">
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="period" 
-                label={{ value: 'Period', position: 'bottom' }}
-              />
-              <YAxis label={{ value: selectedMetric, angle: -90, position: 'left' }} />
-              <Tooltip />
-              <Legend />
-              {scenarios.map(s => (
-                <Line
-                  key={s.name}
-                  type="monotone"
-                  dataKey={s.name}
-                  stroke={getScenarioColor(s.name)}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                  onClick={() => handleScenarioClick(s.name)}
+      <Tabs defaultValue="chart" className="w-full">
+        <TabsList>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+          <TabsTrigger value="table">Table</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chart">
+          <div className="bg-card p-4 rounded-lg shadow-sm">
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="period" 
+                  label={{ value: 'Period', position: 'bottom' }}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+                <YAxis label={{ value: selectedMetric, angle: -90, position: 'left' }} />
+                <Tooltip />
+                <Legend />
+                {scenarios.map(s => (
+                  <Line
+                    key={s.name}
+                    type="monotone"
+                    dataKey={s.name}
+                    stroke={getScenarioColor(s.name)}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                    onClick={() => onScenarioSelect?.(s.name)}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </TabsContent>
 
-      {/* Metrics Table */}
-      {metrics.length > 0 && (
-        <div className="rounded-lg border shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Scenario</TableHead>
-                <TableHead>WAF</TableHead>
-                <TableHead>Modified Duration</TableHead>
-                <TableHead>Yield</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {metrics.map((m) => (
-                <TableRow 
-                  key={m.name}
-                  className={cn(
-                    "cursor-pointer transition-colors hover:bg-muted/50",
-                    "data-[state=selected]:bg-muted"
-                  )}
-                  onClick={() => handleScenarioClick(m.name)}
-                >
-                  <TableCell>{m.name}</TableCell>
-                  <TableCell>{m.waf}</TableCell>
-                  <TableCell>{m.duration}</TableCell>
-                  <TableCell>{m.yield}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+        <TabsContent value="table">
+          <ForecastTable 
+            cashflows={selectedScenarioData}
+            startDate={startDate}
+          />
+        </TabsContent>
+      </Tabs>
 
-      {/* Alerts */}
       {scenarios.some(s => s.metrics?.waf < 2) && (
         <Alert>
           <AlertDescription>
