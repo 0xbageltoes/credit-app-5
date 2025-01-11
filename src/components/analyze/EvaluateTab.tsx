@@ -80,11 +80,17 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         .select("id")
         .maybeSingle();
 
+      const serializedResults = scenarioResults.map(result => ({
+        ...result,
+        cashflows: result.cashflows.map(cf => ({ ...cf })),
+        metrics: { ...result.metrics }
+      }));
+
       if (existing) {
         const { error } = await supabase
           .from('user_analysis_state')
           .update({ 
-            last_forecast: scenarioResults,
+            last_forecast: serializedResults,
             user_id: userData.id 
           })
           .eq("id", existing.id);
@@ -93,7 +99,7 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
         const { error } = await supabase
           .from('user_analysis_state')
           .insert([{ 
-            last_forecast: scenarioResults,
+            last_forecast: serializedResults,
             user_id: userData.id 
           }]);
         if (error) throw error;
@@ -115,7 +121,8 @@ export const EvaluateTab = ({ investmentDetails }: EvaluateTabProps) => {
   // Load persisted forecast results
   useEffect(() => {
     if (analysisState?.last_forecast && !scenarios.length) {
-      setScenarios(analysisState.last_forecast as ScenarioResult[]);
+      const parsedScenarios = analysisState.last_forecast as unknown as ScenarioResult[];
+      setScenarios(parsedScenarios);
     }
   }, [analysisState, scenarios.length]);
 

@@ -1,4 +1,4 @@
-import { ScenarioType } from "./types";
+export type ScenarioType = "CPR" | "CDR" | "Loss Severity" | "Delinquency" | "Interest Rate" | "Draw Rate";
 
 export interface ScenarioConfig {
   type: ScenarioType;
@@ -14,6 +14,15 @@ export interface ScenarioConfig {
   };
 }
 
+export interface CashflowData {
+  period: number;
+  scheduledPrincipal: number;
+  scheduledInterest: number;
+  prepayments: number;
+  losses: number;
+  recoveries: number;
+}
+
 export interface CashflowMetrics {
   waf: number;
   modifiedDuration: number;
@@ -21,14 +30,8 @@ export interface CashflowMetrics {
 }
 
 export interface ScenarioResult {
+  [key: string]: any; // Add index signature for JSON compatibility
   name: string;
-  cashflows: {
-    period: number;
-    scheduledPrincipal: number;
-    scheduledInterest: number;
-    prepayments: number;
-    losses: number;
-    recoveries: number;
-  }[];
+  cashflows: CashflowData[];
   metrics: CashflowMetrics;
 }

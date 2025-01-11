@@ -18,8 +18,9 @@ export const generateScenarioResults = (
   vector: number[], 
   investmentAmount: number, 
   interestRate: number
-) => ({
-  scheduledPrincipal: vector * investmentAmount / 100,
+): CashflowData => ({
+  period: 0,
+  scheduledPrincipal: (vector[0] || 0) * investmentAmount / 100,
   scheduledInterest: interestRate * investmentAmount / 1200,
   prepayments: 0,
   losses: 0,
