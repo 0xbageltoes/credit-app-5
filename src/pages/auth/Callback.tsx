@@ -26,14 +26,14 @@ export default function Callback() {
           return;
         }
 
-        // If no session, try to exchange the code for a session
-        const { error: signInError } = await supabase.auth.exchangeSessionForToken();
+        // If no session, try to refresh it
+        const { error: refreshError } = await supabase.auth.refreshSession();
         
-        if (signInError) {
-          throw signInError;
+        if (refreshError) {
+          throw refreshError;
         }
 
-        // Check session again after exchange
+        // Check session again after refresh
         const { data: { session: newSession }, error: finalError } = await supabase.auth.getSession();
         
         if (finalError) {
