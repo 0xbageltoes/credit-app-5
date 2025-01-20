@@ -133,7 +133,7 @@ export default function Login() {
             appearance={{ theme: ThemeSupa }}
             theme="light"
             providers={[]}
-            redirectTo={`${window.location.origin}/dashboard`}
+            redirectTo={`${window.location.origin}/auth/callback`}
           />
         </CardContent>
       </Card>

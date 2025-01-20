@@ -10,36 +10,44 @@ export default function Callback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get the session from URL or local storage
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // First check if we have a session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) throw error;
-        
+        if (sessionError) {
+          throw sessionError;
+        }
+
         if (session) {
-          // Session exists, redirect to dashboard
+          toast({
+            title: "Successfully signed in",
+            description: "Welcome back!",
+          });
+          navigate("/dashboard");
+          return;
+        }
+
+        // If no session, try to exchange the code for a session
+        const { error: signInError } = await supabase.auth.exchangeSessionForToken();
+        
+        if (signInError) {
+          throw signInError;
+        }
+
+        // Check session again after exchange
+        const { data: { session: newSession }, error: finalError } = await supabase.auth.getSession();
+        
+        if (finalError) {
+          throw finalError;
+        }
+
+        if (newSession) {
           toast({
             title: "Successfully signed in",
             description: "Welcome back!",
           });
           navigate("/dashboard");
         } else {
-          // No session found, try to exchange the code for a session
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError) throw refreshError;
-          
-          // After refresh, check session again
-          const { data: { session: refreshedSession } } = await supabase.auth.getSession();
-          
-          if (refreshedSession) {
-            toast({
-              title: "Successfully signed in",
-              description: "Welcome back!",
-            });
-            navigate("/dashboard");
-          } else {
-            throw new Error("No session found after refresh");
-          }
+          throw new Error("No session found after authentication");
         }
       } catch (error) {
         console.error("Auth error:", error);
