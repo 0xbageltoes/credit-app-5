@@ -14,6 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
 
   // Listen for auth state changes
   supabase.auth.onAuthStateChange((event, session) => {
@@ -45,6 +46,29 @@ export default function Login() {
     }
   };
 
+  const handleGithubSignIn = async () => {
+    try {
+      setIsGithubLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to sign in with GitHub");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sign in with GitHub",
+      });
+    } finally {
+      setIsGithubLoading(false);
+    }
+  };
+
   return (
     <div className="container flex items-center justify-center min-h-screen py-12">
       <Card className="w-full max-w-md">
@@ -61,20 +85,35 @@ export default function Login() {
             </Alert>
           )}
           
-          <Button 
-            variant="outline" 
-            type="button" 
-            className="w-full"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Icons.google className="mr-2 h-4 w-4" />
-            )}
-            Sign in with Google
-          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.google className="mr-2 h-4 w-4" />
+              )}
+              Google
+            </Button>
+
+            <Button 
+              variant="outline" 
+              type="button"
+              onClick={handleGithubSignIn}
+              disabled={isGithubLoading}
+            >
+              {isGithubLoading ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icons.gitHub className="mr-2 h-4 w-4" />
+              )}
+              GitHub
+            </Button>
+          </div>
           
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

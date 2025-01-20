@@ -27,6 +27,7 @@ const formSchema = z.object({
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -95,6 +96,28 @@ export default function Register() {
     }
   };
 
+  const handleGithubSignUp = async () => {
+    try {
+      setIsGithubLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sign up with GitHub",
+      });
+    } finally {
+      setIsGithubLoading(false);
+    }
+  };
+
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
@@ -107,20 +130,35 @@ export default function Register() {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          type="button"
-          disabled={isGoogleLoading}
-          className="w-full"
-          onClick={handleGoogleSignUp}
-        >
-          {isGoogleLoading ? (
-            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.google className="mr-2 h-4 w-4" />
-          )}
-          Sign up with Google
-        </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            variant="outline"
+            type="button"
+            disabled={isGoogleLoading}
+            onClick={handleGoogleSignUp}
+          >
+            {isGoogleLoading ? (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Icons.google className="mr-2 h-4 w-4" />
+            )}
+            Google
+          </Button>
+
+          <Button
+            variant="outline"
+            type="button"
+            disabled={isGithubLoading}
+            onClick={handleGithubSignUp}
+          >
+            {isGithubLoading ? (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Icons.gitHub className="mr-2 h-4 w-4" />
+            )}
+            GitHub
+          </Button>
+        </div>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
