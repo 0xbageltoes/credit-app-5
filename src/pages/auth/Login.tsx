@@ -85,19 +85,20 @@ export default function Login() {
             </Alert>
           )}
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col space-y-2">
             <Button 
               variant="outline" 
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isLoading}
+              className="w-full"
             >
               {isLoading ? (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Icons.google className="mr-2 h-4 w-4" />
               )}
-              Google
+              Sign in with Google
             </Button>
 
             <Button 
@@ -105,13 +106,14 @@ export default function Login() {
               type="button"
               onClick={handleGithubSignIn}
               disabled={isGithubLoading}
+              className="w-full"
             >
               {isGithubLoading ? (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Icons.github className="mr-2 h-4 w-4" />
               )}
-              GitHub
+              Sign in with GitHub
             </Button>
           </div>
           
