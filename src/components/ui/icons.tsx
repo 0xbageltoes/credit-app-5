@@ -1,4 +1,5 @@
 import {
+  Github,
   Loader2,
   LucideProps,
   Moon,
@@ -14,6 +15,7 @@ export const Icons = {
   moon: Moon,
   twitter: Twitter,
   spinner: Loader2,
+  github: Github,
   google: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
