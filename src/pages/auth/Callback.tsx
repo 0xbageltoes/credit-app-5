@@ -10,48 +10,45 @@ export default function Callback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log("Starting authentication callback process...");
-        
-        // Get the URL fragment
+        // Check for error in URL parameters
+        const searchParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        
+        const error = searchParams.get('error') || hashParams.get('error');
+        const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+        
+        console.log("URL parameters:", { 
+          error,
+          errorDescription,
+          search: window.location.search,
+          hash: window.location.hash
+        });
+
+        if (error) {
+          // Handle the multiple accounts error specifically
+          if (errorDescription?.includes('Multiple accounts with the same email address')) {
+            throw new Error(
+              "This email is already associated with another login method. " +
+              "Please use your original login method (e.g., Google) or use a different email address."
+            );
+          }
+          throw new Error(decodeURIComponent(errorDescription || 'Authentication failed'));
+        }
+
+        // Get the URL fragment
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         
-        console.log("URL parameters:", { 
-          hasAccessToken: !!accessToken,
-          hasRefreshToken: !!refreshToken,
-          hash: window.location.hash,
-          search: window.location.search 
-        });
-
         // If we have tokens in the URL, set the session
         if (accessToken && refreshToken) {
-          console.log("Found tokens in URL, setting session...");
           const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
 
-          console.log("Set session result:", {
-            success: !!session,
-            error: setSessionError,
-            session: session ? {
-              user: {
-                id: session.user.id,
-                email: session.user.email,
-                app_metadata: session.user.app_metadata,
-                user_metadata: session.user.user_metadata
-              }
-            } : null
-          });
-
-          if (setSessionError) {
-            console.error("Set session error:", setSessionError);
-            throw setSessionError;
-          }
+          if (setSessionError) throw setSessionError;
 
           if (session) {
-            console.log("Successfully set session, redirecting to dashboard...");
             toast({
               title: "Successfully signed in",
               description: "Welcome back!",
@@ -62,29 +59,11 @@ export default function Callback() {
         }
 
         // If no tokens in URL, try to get existing session
-        console.log("No tokens in URL, checking for existing session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        console.log("Session check result:", {
-          hasSession: !!session,
-          error: sessionError,
-          session: session ? {
-            user: {
-              id: session.user.id,
-              email: session.user.email,
-              app_metadata: session.user.app_metadata,
-              user_metadata: session.user.user_metadata
-            }
-          } : null
-        });
-
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          throw sessionError;
-        }
+        if (sessionError) throw sessionError;
 
         if (session) {
-          console.log("Found existing session, redirecting to dashboard...");
           toast({
             title: "Successfully signed in",
             description: "Welcome back!",
@@ -94,7 +73,6 @@ export default function Callback() {
         }
 
         // If we get here, authentication failed
-        console.error("No session could be established");
         throw new Error("Authentication failed - no session could be established");
 
       } catch (error) {
