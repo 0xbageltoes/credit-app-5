@@ -12,12 +12,62 @@ export default function Callback() {
       try {
         console.log("Starting authentication callback process...");
         
-        // First check if we have a session
+        // Get the URL fragment
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        console.log("URL parameters:", { 
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          hash: window.location.hash,
+          search: window.location.search 
+        });
+
+        // If we have tokens in the URL, set the session
+        if (accessToken && refreshToken) {
+          console.log("Found tokens in URL, setting session...");
+          const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          console.log("Set session result:", {
+            success: !!session,
+            error: setSessionError,
+            session: session ? {
+              user: {
+                id: session.user.id,
+                email: session.user.email,
+                app_metadata: session.user.app_metadata,
+                user_metadata: session.user.user_metadata
+              }
+            } : null
+          });
+
+          if (setSessionError) {
+            console.error("Set session error:", setSessionError);
+            throw setSessionError;
+          }
+
+          if (session) {
+            console.log("Successfully set session, redirecting to dashboard...");
+            toast({
+              title: "Successfully signed in",
+              description: "Welcome back!",
+            });
+            navigate("/dashboard");
+            return;
+          }
+        }
+
+        // If no tokens in URL, try to get existing session
+        console.log("No tokens in URL, checking for existing session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        console.log("Initial session check:", {
+        console.log("Session check result:", {
           hasSession: !!session,
-          sessionError,
+          error: sessionError,
           session: session ? {
             user: {
               id: session.user.id,
@@ -27,14 +77,14 @@ export default function Callback() {
             }
           } : null
         });
-        
+
         if (sessionError) {
           console.error("Session error:", sessionError);
           throw sessionError;
         }
 
         if (session) {
-          console.log("Valid session found, redirecting to dashboard...");
+          console.log("Found existing session, redirecting to dashboard...");
           toast({
             title: "Successfully signed in",
             description: "Welcome back!",
@@ -43,61 +93,10 @@ export default function Callback() {
           return;
         }
 
-        console.log("No session found, attempting to refresh...");
-        
-        // If no session, try to refresh it
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        
-        console.log("Session refresh attempt:", {
-          success: !!refreshData.session,
-          refreshError,
-          session: refreshData.session ? {
-            user: {
-              id: refreshData.session.user.id,
-              email: refreshData.session.user.email,
-              app_metadata: refreshData.session.user.app_metadata,
-              user_metadata: refreshData.session.user.user_metadata
-            }
-          } : null
-        });
-        
-        if (refreshError) {
-          console.error("Refresh error:", refreshError);
-          throw refreshError;
-        }
+        // If we get here, authentication failed
+        console.error("No session could be established");
+        throw new Error("Authentication failed - no session could be established");
 
-        // Check session again after refresh
-        const { data: { session: newSession }, error: finalError } = await supabase.auth.getSession();
-        
-        console.log("Final session check:", {
-          hasSession: !!newSession,
-          finalError,
-          session: newSession ? {
-            user: {
-              id: newSession.user.id,
-              email: newSession.user.email,
-              app_metadata: newSession.user.app_metadata,
-              user_metadata: newSession.user.user_metadata
-            }
-          } : null
-        });
-        
-        if (finalError) {
-          console.error("Final session error:", finalError);
-          throw finalError;
-        }
-
-        if (newSession) {
-          console.log("Successfully obtained new session, redirecting to dashboard...");
-          toast({
-            title: "Successfully signed in",
-            description: "Welcome back!",
-          });
-          navigate("/dashboard");
-        } else {
-          console.error("No session found after all attempts");
-          throw new Error("No session found after authentication");
-        }
       } catch (error) {
         console.error("Authentication error:", error);
         toast({
